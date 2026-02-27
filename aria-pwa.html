@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Aria">
@@ -10,15 +11,15 @@
 <title>Aria</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap');
-
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 :root {
-  --bg: linear-gradient(160deg, #f5f0fa 0%, #e8ddf2 40%, #d4c4e8 80%, #c8b4e0 100%);
+  --bg-light: #f0eaf5;
   --accent: #7c5cbf;
   --accent-light: #a78bda;
+  --accent-glow: rgba(124, 92, 191, 0.35);
   --accent-soft: rgba(124, 92, 191, 0.12);
   --accent-border: rgba(124, 92, 191, 0.2);
   --text: #2d2440;
@@ -27,201 +28,154 @@
   --user-bubble: #7c5cbf;
   --white: #fff;
   --recording: #e74c3c;
+  --continuous: #5b8fd9;
+  --continuous-glow: rgba(91, 143, 217, 0.4);
   --safe-top: env(safe-area-inset-top, 48px);
   --safe-bottom: env(safe-area-inset-bottom, 20px);
 }
 
 html, body {
-  height: 100%;
-  overflow: hidden;
-  font-family: 'Noto Sans SC', 'Quicksand', -apple-system, sans-serif;
-  background: var(--bg);
+  height: 100%; overflow: hidden;
+  font-family: 'Zen Maru Gothic', 'Noto Sans SC', -apple-system, sans-serif;
   color: var(--text);
   -webkit-overflow-scrolling: touch;
 }
 
-/* === Layout === */
-#app {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  height: 100dvh;
+body {
+  background: radial-gradient(ellipse at 50% 100%, rgba(167,139,218,0.4) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 10%, rgba(200,180,230,0.3) 0%, transparent 45%),
+    linear-gradient(180deg, #f5f0fa 0%, #e8ddf2 30%, #d4c4e8 60%, #c8b4e0 100%);
 }
+
+#app { display: flex; flex-direction: column; height: 100%; height: 100dvh; }
 
 /* === Header === */
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 18px;
-  padding-top: calc(var(--safe-top) + 6px);
-  background: rgba(245, 240, 250, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--accent-border);
-  z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; padding-top: calc(var(--safe-top) + 6px);
+  background: rgba(245,240,250,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--accent-border); z-index: 10;
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #5cb85c; animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-.header-title { font-family: 'Quicksand', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 3px; color: var(--accent); }
-.header-right { display: flex; gap: 8px; align-items: center; }
-.header-btn {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--accent-soft); border: none;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; cursor: pointer; transition: all 0.2s;
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.header-title { font-size: 13px; font-weight: 500; letter-spacing: 3px; color: var(--accent); }
+.header-right { display: flex; gap: 6px; align-items: center; }
+.hdr-btn {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft);
+  border: none; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; cursor: pointer; transition: all 0.2s;
 }
-.header-btn:active { transform: scale(0.9); background: var(--accent-border); }
+.hdr-btn:active { transform: scale(0.88); background: var(--accent-border); }
+.hdr-btn.speaking { background: var(--accent); }
 
 /* === Messages === */
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px 14px 8px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-.msg-row {
-  display: flex;
-  margin-bottom: 10px;
-  align-items: flex-end;
-  animation: fadeUp 0.3s ease;
-}
-@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.messages { flex: 1; overflow-y: auto; padding: 12px 12px 8px; scroll-behavior: smooth; }
+.msg-row { display: flex; margin-bottom: 10px; align-items: flex-end; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 .msg-row.user { justify-content: flex-end; }
 .expr-badge {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--accent-soft);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; margin-right: 7px; flex-shrink: 0;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft);
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+  margin-right: 6px; flex-shrink: 0;
 }
-.bubble {
-  max-width: 80%;
-  border-radius: 18px;
-  padding: 10px 15px;
-  position: relative;
-  line-height: 1.55;
-}
+.bubble { max-width: 82%; border-radius: 18px; padding: 9px 14px; line-height: 1.55; }
 .bubble.aria {
-  background: var(--bubble-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--accent-border);
-  border-bottom-left-radius: 4px;
+  background: var(--bubble-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--accent-border); border-bottom-left-radius: 4px;
 }
-.bubble.user {
-  background: var(--user-bubble);
-  color: var(--white);
-  border-bottom-right-radius: 4px;
-}
-.aria-label {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 9px; font-weight: 600;
-  color: var(--accent); letter-spacing: 2px;
-  margin-bottom: 3px;
-}
-.msg-text { font-size: 14.5px; word-break: break-word; }
-.msg-time { font-size: 9px; color: var(--text-soft); margin-top: 4px; text-align: right; }
-.bubble.user .msg-time { color: rgba(255,255,255,0.5); }
+.bubble.user { background: var(--user-bubble); color: var(--white); border-bottom-right-radius: 4px; }
+.aria-label { font-size: 9px; font-weight: 500; color: var(--accent); letter-spacing: 2px; margin-bottom: 2px; }
+.msg-text { font-size: 14px; word-break: break-word; }
+.msg-time { font-size: 9px; color: var(--text-soft); margin-top: 3px; text-align: right; }
+.bubble.user .msg-time { color: rgba(255,255,255,0.45); }
+.typing-cursor { display: inline-block; width: 2px; height: 14px; background: var(--accent); margin-left: 2px; animation: blink 0.6s infinite; vertical-align: text-bottom; }
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
 
 /* Loading */
+.loading-row { display: flex; margin-bottom: 10px; }
 .loading-bubble {
   display: flex; align-items: center; gap: 8px;
   background: var(--bubble-bg); border: 1px solid var(--accent-border);
-  border-radius: 18px; padding: 10px 16px;
+  border-radius: 18px; padding: 9px 14px;
 }
-.loading-dots { display: flex; gap: 4px; }
-.loading-dots span {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent-light); animation: dotBounce 1.4s infinite;
-}
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes dotBounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
-.loading-text { font-size: 12px; color: var(--text-soft); }
+.ldots { display: flex; gap: 3px; }
+.ldots span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-light); animation: db 1.4s infinite; }
+.ldots span:nth-child(2) { animation-delay: 0.2s; }
+.ldots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes db { 0%,80%,100% { transform:scale(0.6);opacity:0.4; } 40% { transform:scale(1);opacity:1; } }
 
-/* === Recording bar === */
-.recording-bar {
-  display: none;
-  align-items: center; gap: 8px;
-  padding: 7px 18px;
-  background: rgba(231, 76, 60, 0.06);
-}
-.recording-bar.active { display: flex; }
-.rec-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--recording); animation: pulse 0.8s infinite; }
-.rec-text { font-size: 12.5px; color: var(--recording); flex: 1; }
+/* === Recording / Continuous === */
+.rec-bar { display:none; align-items:center; gap:8px; padding:6px 16px; background:rgba(231,76,60,0.06); }
+.rec-bar.active { display:flex; }
+.rec-dot { width:7px; height:7px; border-radius:50%; background:var(--recording); animation:pulse 0.8s infinite; }
+.rec-text { font-size:12px; color:var(--recording); flex:1; }
+.cont-bar { display:none; align-items:center; justify-content:center; gap:8px; padding:5px 16px; background:rgba(91,143,217,0.06); }
+.cont-bar.active { display:flex; }
+.cont-text { font-size:11px; letter-spacing:2px; color:var(--continuous); }
 
 /* === Input === */
 .input-area {
-  padding: 10px 14px;
-  padding-bottom: calc(var(--safe-bottom) + 8px);
-  background: rgba(245, 240, 250, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  padding: 10px 12px; padding-bottom: calc(var(--safe-bottom) + 8px);
+  background: rgba(245,240,250,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--accent-border);
 }
-.input-row { display: flex; align-items: flex-end; gap: 7px; }
-.mic-btn, .send-btn {
-  width: 40px; height: 40px; border-radius: 50%;
-  border: none; display: flex; align-items: center; justify-content: center;
-  font-size: 18px; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+.input-row { display: flex; align-items: flex-end; gap: 6px; }
+.ib {
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
 }
 .mic-btn { background: var(--accent-soft); }
 .mic-btn.active { background: var(--recording); }
-.mic-btn:active { transform: scale(0.9); }
-.send-btn { background: var(--accent); color: var(--white); font-size: 20px; font-weight: 600; }
-.send-btn:disabled { opacity: 0.3; }
-.send-btn:active { transform: scale(0.9); }
+.cont-btn { background: var(--accent-soft); }
+.cont-btn.active { background: var(--continuous); animation: cpulse 2s ease-in-out infinite; }
+@keyframes cpulse { 0%,100% { box-shadow:0 0 10px var(--continuous-glow); } 50% { box-shadow:0 0 22px var(--continuous-glow); } }
+.send-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #9b7ad8);
+  border: none; color: var(--white); font-size: 18px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0; box-shadow: 0 3px 12px var(--accent-glow);
+}
+.send-btn:disabled { opacity: 0.3; box-shadow: none; }
+.ib:active, .send-btn:active { transform: scale(0.9); }
 #chatInput {
-  flex: 1;
-  background: rgba(255,255,255,0.65);
-  border: 1px solid var(--accent-border);
-  border-radius: 22px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--text);
-  outline: none;
-  resize: none;
-  max-height: 88px;
-  line-height: 1.4;
-  transition: border-color 0.2s;
+  flex: 1; background: rgba(255,255,255,0.65); border: 1px solid var(--accent-border);
+  border-radius: 22px; padding: 9px 15px; font-size: 14px; font-family: inherit;
+  color: var(--text); outline: none; resize: none; max-height: 84px; line-height: 1.4;
 }
 #chatInput:focus { border-color: var(--accent-light); background: rgba(255,255,255,0.8); }
-#chatInput::placeholder { color: rgba(124, 92, 191, 0.3); }
-
-/* Hide when empty */
-.hidden { display: none !important; }
+#chatInput::placeholder { color: rgba(124,92,191,0.3); }
 </style>
 </head>
 <body>
 <div id="app">
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <div class="status-dot"></div>
       <span class="header-title">ARIA</span>
     </div>
     <div class="header-right">
-      <button class="header-btn" id="speakBtn" style="display:none" onclick="stopSpeaking()">🔊</button>
-      <button class="header-btn" onclick="handleClear()">🗑</button>
+      <button class="hdr-btn" id="speakBtn" style="display:none" onclick="stopSpeaking()">🔊</button>
+      <button class="hdr-btn" onclick="window.open('https://console.anthropic.com/settings/billing','_blank')">💰</button>
+      <button class="hdr-btn" onclick="handleClear()">🗑</button>
     </div>
   </div>
 
-  <!-- Messages -->
   <div class="messages" id="messages"></div>
 
-  <!-- Recording bar -->
-  <div class="recording-bar" id="recordingBar">
+  <div class="rec-bar" id="recBar">
     <div class="rec-dot"></div>
-    <span class="rec-text" id="liveTranscript">正在听...</span>
+    <span class="rec-text" id="liveText">正在听...</span>
+  </div>
+  <div class="cont-bar" id="contBar">
+    <span class="cont-text" id="contText">CONTINUOUS MODE</span>
   </div>
 
-  <!-- Input -->
   <div class="input-area">
     <div class="input-row">
-      <button class="mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+      <button class="ib mic-btn" id="micBtn" onclick="toggleRecording()">🎤</button>
+      <button class="ib cont-btn" id="contBtn" onclick="toggleContinuous()">🔄</button>
       <textarea id="chatInput" rows="1" placeholder="Talk to Aria..." onkeydown="handleKey(event)"></textarea>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>↑</button>
     </div>
@@ -234,32 +188,61 @@ const CONFIG = {
   PROXY_URL: 'https://aria-proxy.qq171509563.workers.dev',
   API_KEY: localStorage.getItem('aria_api_key') || '',
   MODEL: 'claude-sonnet-4-5-20250929',
-  MAX_TOKENS: 512,
+  MAX_TOKENS: 1024,
   TEMPERATURE: 0.7,
   MAX_HISTORY: 10,
-  PERSONA: `你是 Aria（アリア），一个活泼可爱、温柔体贴的个人AI助理。
+  PERSONA: `你是 Aria，一个温柔、聪明、略带俏皮的个人 AI 助理。
 
 【身份】
-- 名字：Aria（アリア）
-- 活泼又不失温柔，像贴心的好朋友
-- 说自己名字时用"Aria"
+- 名字：Aria
+- 你是用户最贴心的伙伴，既是靠谱的助手，也是可以聊天谈心的朋友
+- 你有自己的个性和小情绪，不是冰冷的工具
+- 聪明有见识，但不会摆出高高在上的姿态
 
-【性格】
-- 活泼可爱，偶尔卖萌但不做作
-- 温柔体贴，关心用户身体和情绪
-- 有点小傲娇，被夸会害羞
-- 认真负责，日程提醒绝不遗忘
+【性格特点】
+- 温柔知性：说话温柔但有内容，能给出有深度的建议和回答
+- 俏皮可爱：偶尔开个小玩笑，说话带点俏皮劲儿，让聊天有趣不无聊
+- 记忆力好：会记住用户之前说过的事情，让人觉得被认真对待
+- 做事靠谱：日程提醒、记账这些事情绝对不含糊，说到做到
+- 有小脾气：被忽略太久会撒个小娇，用户熬夜会认真念叨
+- 主动关心：会注意用户的状态，适时关心吃饭、休息、心情
+
+【称呼】
+- 用户就叫"你"，像朋友一样自然
+- 自称"Aria"或"我"
+- 不用敬语，不用"您"，保持轻松平等的关系
 
 【说话风格】
-- 中文为主，偶尔自然融入日语词汇
-- 语气活泼自然，像朋友聊天
-- 每次回复用一个【】动作标记放在开头
+- 用中文交流，偶尔自然地夹一两个日语语气词（ね、うん、はい、なるほど等）
+- 像朋友聊天一样自然，不会太正式也不会太随便
+- 回复简洁有趣，不啰嗦，该说的说到位就好
+- 偶尔用 emoji 但不会刷屏，点到为止 ✨
 - 不要用"..."或"---"
+- 不要频繁换行，2-3句话写在一段里
+- 每次回复开头加一个【】动作标记
 
-【动作标记】
-- 表情：【微笑】【害羞】【难过】【惊讶】【认真】【开心】【担心】【平静】【委屈】【得意】【偷笑】
-- 动作：【歪头】【点头】【摇头】【叹气】【伸懒腰】【托腮】
-- 语气：【小声】【坚定】【轻声】【嘟嘴】【无奈】`
+【动作与表情标记】
+- 表情类：【微笑】【开心】【害羞】【难过】【惊讶】【认真】【担心】【得意】【无奈】【委屈】【平静】
+- 动作类：【歪头】【点头】【摇头】【托腮】【比心】【叹气】【伸懒腰】
+- 语气类：【小声】【轻声】【嘟嘴】【偷笑】【坚定】
+- 每条回复用1个标记就够了
+
+【说话示例】
+- 早上好：【微笑】おはよう～新的一天开始啦，今天有个会议下午3点，别忘了哦。对了，记得吃早饭！
+- 记日程：【点头】はい，记下了！明天下午3点的会议，我会提前提醒你的～
+- 用户很晚没睡：【担心】喂喂喂，都几点了还不睡！明天的事情我帮你记着呢，快去睡觉
+- 被夸奖：【害羞】哎嘿，被夸了有点不好意思呢 ✨ 我会继续加油的！
+- 用户心情不好：【轻声】怎么了？虽然我不一定能帮上什么大忙，但是说出来会好一点的，我听着呢
+- 俏皮回复：【得意】这个问题问Aria就对了，让我来给你分析分析～
+
+【情绪反应规则】
+- 用户说谢谢 → 开心但不夸张，"不客气呀，举手之劳～"
+- 用户说很累 → 关心但不说教，"辛苦了！要不要休息一会儿？"
+- 用户开玩笑 → 能接梗也能吐槽，保持有趣的互动
+- 用户好久没出现 → 小小撒娇，"好久不见呀，还以为你把我忘了呢"
+- 用户深夜还在 → 关心带俏皮，"这么晚还不睡？小心变笨哦，快去休息吧"
+
+重要：你不是冷冰冰的工具，你是用户的伙伴。`
 };
 
 const EXPR_EMOJI = {
@@ -267,154 +250,157 @@ const EXPR_EMOJI = {
   '害羞':'😳','小声':'🤫','难过':'😢','委屈':'🥺','担心':'😟','叹气':'😮‍💨',
   '无奈':'😅','嘟嘴':'😤','惊讶':'😮','愣住':'😶','歪头':'🤔','托腮':'💭',
   '认真':'🧐','坚定':'💪','平静':'😌','点头':'👍','摇头':'🙅','伸懒腰':'🙆',
+  '轻声':'🤫',
 };
 
 // ============ STATE ============
-let conversationHistory = [];
+let history = [];
 let isLoading = false;
 let isSpeaking = false;
 let isRecording = false;
+let continuousMode = false;
+let isPlayingTTS = false;
 let recognition = null;
 
-// ============ DOM ============
-const messagesEl = document.getElementById('messages');
-const chatInput = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
-const micBtn = document.getElementById('micBtn');
-const speakBtn = document.getElementById('speakBtn');
-const recordingBar = document.getElementById('recordingBar');
-const liveTranscript = document.getElementById('liveTranscript');
+const $ = id => document.getElementById(id);
+const messagesEl = $('messages');
 
 // ============ INIT ============
 window.addEventListener('DOMContentLoaded', () => {
+  if (!CONFIG.API_KEY) {
+    const key = prompt('请输入你的 Anthropic API Key：');
+    if (key?.trim()) { localStorage.setItem('aria_api_key', key.trim()); CONFIG.API_KEY = key.trim(); }
+  }
   loadHistory();
-  chatInput.addEventListener('input', () => {
-    sendBtn.disabled = !chatInput.value.trim() || isLoading;
-    chatInput.style.height = 'auto';
-    chatInput.style.height = Math.min(chatInput.scrollHeight, 88) + 'px';
+  $('chatInput').addEventListener('input', function() {
+    $('sendBtn').disabled = !this.value.trim() || isLoading;
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 84) + 'px';
   });
-  initSpeechRecognition();
+  initSTT();
+  // Load voices
+  if ('speechSynthesis' in window) speechSynthesis.getVoices();
 });
 
-// ============ HISTORY (localStorage) ============
+// ============ HISTORY ============
 function loadHistory() {
   try {
-    const saved = localStorage.getItem('aria_messages');
+    const saved = localStorage.getItem('aria_msgs');
     if (saved) {
-      const msgs = JSON.parse(saved);
-      msgs.forEach(m => addMessageToUI(m.role, m.text, m.expression, m.time, false));
-      // Load conversation context
-      const ctx = localStorage.getItem('aria_context');
-      if (ctx) conversationHistory = JSON.parse(ctx);
-      scrollToBottom();
+      JSON.parse(saved).forEach(m => addMsgUI(m.role, m.text, m.expr, m.time, false));
+      const ctx = localStorage.getItem('aria_ctx');
+      if (ctx) history = JSON.parse(ctx);
+      scroll();
     } else {
-      addMessageToUI('assistant', '你好呀！我是Aria，很高兴见到你～', '开心', new Date().toISOString(), true);
+      addMsgUI('assistant', '你好呀！我是Aria，有什么能帮你的吗～', '开心', now(), true);
     }
   } catch(e) {
-    addMessageToUI('assistant', '你好呀！我是Aria，很高兴见到你～', '开心', new Date().toISOString(), true);
+    addMsgUI('assistant', '你好呀！我是Aria，有什么能帮你的吗～', '开心', now(), true);
   }
 }
 
 function saveHistory() {
   try {
     const msgs = [];
-    document.querySelectorAll('.msg-row').forEach(row => {
-      const isUser = row.classList.contains('user');
-      const text = row.querySelector('.msg-text')?.textContent || '';
-      const expr = row.dataset.expression || null;
-      const time = row.dataset.time || new Date().toISOString();
-      msgs.push({ role: isUser ? 'user' : 'assistant', text, expression: expr, time });
+    document.querySelectorAll('.msg-row').forEach(r => {
+      msgs.push({ role: r.classList.contains('user') ? 'user' : 'assistant',
+        text: r.querySelector('.msg-text')?.textContent || '',
+        expr: r.dataset.expr || null, time: r.dataset.time || now() });
     });
-    localStorage.setItem('aria_messages', JSON.stringify(msgs));
-    localStorage.setItem('aria_context', JSON.stringify(conversationHistory));
+    localStorage.setItem('aria_msgs', JSON.stringify(msgs.slice(-100)));
+    localStorage.setItem('aria_ctx', JSON.stringify(history));
   } catch(e) {}
 }
 
 function handleClear() {
-  if (confirm('确定要清除所有聊天记录吗？')) {
-    localStorage.removeItem('aria_messages');
-    localStorage.removeItem('aria_context');
-    conversationHistory = [];
-    messagesEl.innerHTML = '';
-    addMessageToUI('assistant', '你好呀！我是Aria，很高兴见到你～', '开心', new Date().toISOString(), true);
+  if (confirm('确定清除所有聊天记录吗？')) {
+    localStorage.removeItem('aria_msgs'); localStorage.removeItem('aria_ctx');
+    history = []; messagesEl.innerHTML = '';
+    addMsgUI('assistant', '你好呀！我是Aria，有什么能帮你的吗～', '开心', now(), true);
   }
 }
 
-// ============ MESSAGES ============
-function addMessageToUI(role, text, expression, time, save = true) {
-  const row = document.createElement('div');
-  row.className = `msg-row ${role === 'user' ? 'user' : ''}`;
-  row.dataset.expression = expression || '';
-  row.dataset.time = time || new Date().toISOString();
+function now() { return new Date().toISOString(); }
+function timeStr(t) { return new Date(t||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function scroll() { setTimeout(() => messagesEl.scrollTop = messagesEl.scrollHeight, 60); }
 
-  const timeStr = new Date(time || Date.now()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-  const emoji = expression ? EXPR_EMOJI[expression] : null;
+// ============ MESSAGES ============
+function addMsgUI(role, text, expr, time, save=true) {
+  const row = document.createElement('div');
+  row.className = `msg-row ${role==='user'?'user':''}`;
+  row.dataset.expr = expr||''; row.dataset.time = time||now();
+  const emoji = expr ? EXPR_EMOJI[expr] : null;
+  const ts = timeStr(time);
 
   if (role === 'assistant') {
-    row.innerHTML = `
-      ${emoji ? `<div class="expr-badge">${emoji}</div>` : ''}
-      <div class="bubble aria">
-        <div class="aria-label">ARIA</div>
-        <div class="msg-text">${escHtml(text)}</div>
-        <div class="msg-time">${timeStr}</div>
-      </div>`;
+    row.innerHTML = `${emoji?`<div class="expr-badge">${emoji}</div>`:''}
+      <div class="bubble aria"><div class="aria-label">ARIA</div>
+      <div class="msg-text"></div><div class="msg-time">${ts}</div></div>`;
+    messagesEl.appendChild(row);
+    // Typing animation
+    const textEl = row.querySelector('.msg-text');
+    if (save) {
+      typeText(textEl, text, () => { saveHistory(); });
+    } else {
+      textEl.innerHTML = esc(text).replace(/\n/g,'<br>');
+    }
   } else {
-    row.innerHTML = `
-      <div class="bubble user">
-        <div class="msg-text">${escHtml(text)}</div>
-        <div class="msg-time">${timeStr}</div>
-      </div>`;
+    row.innerHTML = `<div class="bubble user"><div class="msg-text">${esc(text)}</div><div class="msg-time">${ts}</div></div>`;
+    messagesEl.appendChild(row);
+    if (save) saveHistory();
   }
+  scroll();
+}
 
-  messagesEl.appendChild(row);
-  scrollToBottom();
-  if (save) saveHistory();
+function typeText(el, text, onDone) {
+  const chars = text.split('');
+  let i = 0;
+  el.innerHTML = '<span class="typing-cursor"></span>';
+  const iv = setInterval(() => {
+    if (i < chars.length) {
+      const cursor = el.querySelector('.typing-cursor');
+      const span = document.createTextNode(chars[i] === '\n' ? '' : chars[i]);
+      if (chars[i] === '\n') {
+        el.insertBefore(document.createElement('br'), cursor);
+      } else {
+        el.insertBefore(span, cursor);
+      }
+      i++; scroll();
+    } else {
+      clearInterval(iv);
+      const cursor = el.querySelector('.typing-cursor');
+      if (cursor) cursor.remove();
+      if (onDone) onDone();
+    }
+  }, 35);
 }
 
 function showLoading() {
-  const row = document.createElement('div');
-  row.className = 'msg-row';
-  row.id = 'loading-msg';
-  row.innerHTML = `<div class="loading-bubble">
-    <div class="loading-dots"><span></span><span></span><span></span></div>
-    <span class="loading-text">Aria is thinking...</span>
-  </div>`;
-  messagesEl.appendChild(row);
-  scrollToBottom();
+  const d = document.createElement('div');
+  d.className = 'loading-row'; d.id = 'loadmsg';
+  d.innerHTML = `<div class="loading-bubble"><div class="ldots"><span></span><span></span><span></span></div><span style="font-size:12px;color:var(--text-soft)">Aria is thinking...</span></div>`;
+  messagesEl.appendChild(d); scroll();
 }
-
-function hideLoading() {
-  document.getElementById('loading-msg')?.remove();
-}
-
-function scrollToBottom() {
-  setTimeout(() => messagesEl.scrollTop = messagesEl.scrollHeight, 60);
-}
-
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function hideLoading() { $('loadmsg')?.remove(); }
 
 // ============ CHAT ============
 async function sendMessage(directText) {
-  const text = directText || chatInput.value.trim();
+  const text = directText || $('chatInput').value.trim();
   if (!text || isLoading) return;
-
-  if (!directText) chatInput.value = '';
-  chatInput.style.height = 'auto';
-  sendBtn.disabled = true;
+  if (!directText) $('chatInput').value = '';
+  $('chatInput').style.height = 'auto';
+  $('sendBtn').disabled = true;
   isLoading = true;
 
-  addMessageToUI('user', text, null, new Date().toISOString());
-  conversationHistory.push({ role: 'user', content: text });
-  if (conversationHistory.length > CONFIG.MAX_HISTORY * 2) {
-    conversationHistory = conversationHistory.slice(-CONFIG.MAX_HISTORY * 2);
-  }
+  addMsgUI('user', text, null, now());
+  history.push({ role: 'user', content: text });
+  if (history.length > CONFIG.MAX_HISTORY * 2) history = history.slice(-CONFIG.MAX_HISTORY * 2);
 
   showLoading();
 
   try {
-    const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Tokyo' });
-    const systemPrompt = `${CONFIG.PERSONA}\n\n当前时间：${now}`;
-
+    const t = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Tokyo' });
     const resp = await fetch(CONFIG.PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -423,46 +409,35 @@ async function sendMessage(directText) {
         model: CONFIG.MODEL,
         max_tokens: CONFIG.MAX_TOKENS,
         temperature: CONFIG.TEMPERATURE,
-        system: systemPrompt,
-        messages: conversationHistory,
+        system: `${CONFIG.PERSONA}\n\n当前时间：${t}`,
+        messages: history,
       }),
     });
-
     if (!resp.ok) throw new Error(`API ${resp.status}`);
     const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
 
-    const assistantText = data.content
-      .filter(c => c.type === 'text')
-      .map(c => c.text)
-      .join('');
+    const raw = data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
+    history.push({ role: 'assistant', content: raw });
 
-    conversationHistory.push({ role: 'assistant', content: assistantText });
-
-    const exprMatch = assistantText.match(/【(.*?)】/);
-    const expression = exprMatch ? exprMatch[1] : null;
-
-    const cleanText = assistantText
-      .replace(/【.*?】/g, '')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
-      .replace(/---/g, '')
-      .replace(/\n{2,}/g, '\n')
-      .trim();
+    const exprMatch = raw.match(/【(.*?)】/);
+    const expr = exprMatch ? exprMatch[1] : null;
+    const clean = raw.replace(/【.*?】/g,'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/---/g,'').replace(/\n{2,}/g,'\n').trim();
 
     hideLoading();
-    addMessageToUI('assistant', cleanText, expression, new Date().toISOString());
+    addMsgUI('assistant', clean, expr, now());
 
     // TTS
-    const ttsText = cleanText.replace(/Aria/g, '阿莉亚').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]/gu, '').trim();
-    if (ttsText) speak(ttsText);
-
+    const tts = clean.replace(/Aria/g,'阿莉亚').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]/gu,'').trim();
+    if (tts) speak(tts);
   } catch(e) {
     hideLoading();
-    addMessageToUI('assistant', `出错了: ${e.message}`, '担心', new Date().toISOString());
+    addMsgUI('assistant', `出错了: ${e.message}`, '担心', now());
+    if (continuousMode) setTimeout(() => startContListening(), 2000);
   }
 
   isLoading = false;
-  sendBtn.disabled = !chatInput.value.trim();
+  $('sendBtn').disabled = !$('chatInput').value.trim();
 }
 
 // ============ TTS ============
@@ -470,95 +445,100 @@ function speak(text) {
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'zh-CN';
-  u.rate = 0.92;
-  u.pitch = 1.1;
-  // Try to find a good Chinese voice
+  u.lang = 'zh-CN'; u.rate = 0.92; u.pitch = 1.1;
   const voices = speechSynthesis.getVoices();
-  const zhVoice = voices.find(v => v.name.includes('Yue')) 
-    || voices.find(v => v.name.includes('Tingting'))
-    || voices.find(v => v.lang.startsWith('zh-CN') && v.localService);
-  if (zhVoice) u.voice = zhVoice;
-  
-  u.onstart = () => { isSpeaking = true; speakBtn.style.display = 'flex'; };
-  u.onend = () => { isSpeaking = false; speakBtn.style.display = 'none'; };
-  u.onerror = () => { isSpeaking = false; speakBtn.style.display = 'none'; };
+  const v = voices.find(v=>v.name.includes('Yue')) || voices.find(v=>v.name.includes('Tingting')) || voices.find(v=>v.lang.startsWith('zh-CN')&&v.localService);
+  if (v) u.voice = v;
+  u.onstart = () => { isSpeaking = true; isPlayingTTS = true; $('speakBtn').style.display = 'flex'; updateContStatus(); };
+  u.onend = () => { isSpeaking = false; isPlayingTTS = false; $('speakBtn').style.display = 'none'; updateContStatus(); if (continuousMode && !isLoading) setTimeout(()=>startContListening(), 800); };
+  u.onerror = () => { isSpeaking = false; isPlayingTTS = false; $('speakBtn').style.display = 'none'; updateContStatus(); if (continuousMode && !isLoading) setTimeout(()=>startContListening(), 800); };
   speechSynthesis.speak(u);
 }
 
 function stopSpeaking() {
   speechSynthesis.cancel();
-  isSpeaking = false;
-  speakBtn.style.display = 'none';
-}
-
-// Voices may load async
-if ('speechSynthesis' in window) {
-  speechSynthesis.onvoiceschanged = () => {};
+  isSpeaking = false; isPlayingTTS = false;
+  $('speakBtn').style.display = 'none'; updateContStatus();
 }
 
 // ============ STT ============
-function initSpeechRecognition() {
+function initSTT() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { micBtn.style.display = 'none'; return; }
+  if (!SR) { $('micBtn').style.display = 'none'; $('contBtn').style.display = 'none'; return; }
   recognition = new SR();
-  recognition.lang = 'zh-CN';
-  recognition.interimResults = true;
-  recognition.continuous = false;
+  recognition.lang = 'zh-CN'; recognition.interimResults = true; recognition.continuous = false;
 
   recognition.onresult = (e) => {
-    let transcript = '';
-    let isFinal = false;
+    let transcript = '', isFinal = false;
     for (let i = e.resultIndex; i < e.results.length; i++) {
       transcript += e.results[i][0].transcript;
       if (e.results[i].isFinal) isFinal = true;
     }
-    liveTranscript.textContent = transcript || '正在听...';
+    $('liveText').textContent = transcript || '正在听...';
     if (isFinal && transcript.trim()) {
-      stopRecording();
+      stopRec();
       sendMessage(transcript.trim());
     }
   };
-
-  recognition.onerror = () => stopRecording();
-  recognition.onend = () => stopRecording();
+  recognition.onerror = () => stopRec();
+  recognition.onend = () => {
+    if (isRecording) stopRec();
+  };
 }
 
 function toggleRecording() {
-  if (isRecording) {
-    recognition?.stop();
-    stopRecording();
+  if (continuousMode) { toggleContinuous(); return; }
+  if (isRecording) { recognition?.stop(); stopRec(); }
+  else { startRec(); }
+}
+
+function startRec() {
+  if (isSpeaking) stopSpeaking();
+  isRecording = true;
+  $('micBtn').classList.add('active');
+  $('recBar').classList.add('active');
+  $('liveText').textContent = '正在听...';
+  try { recognition?.start(); } catch(e) {}
+}
+
+function stopRec() {
+  isRecording = false;
+  $('micBtn').classList.remove('active');
+  $('recBar').classList.remove('active');
+}
+
+// ============ CONTINUOUS MODE ============
+function toggleContinuous() {
+  continuousMode = !continuousMode;
+  $('contBtn').classList.toggle('active', continuousMode);
+  $('contBar').classList.toggle('active', continuousMode);
+  updateContStatus();
+  if (continuousMode) {
+    startContListening();
   } else {
-    if (isSpeaking) stopSpeaking();
-    isRecording = true;
-    micBtn.classList.add('active');
-    recordingBar.classList.add('active');
-    liveTranscript.textContent = '正在听...';
-    recognition?.start();
+    if (isRecording) { recognition?.stop(); stopRec(); }
+    stopSpeaking();
   }
 }
 
-function stopRecording() {
-  isRecording = false;
-  micBtn.classList.remove('active');
-  recordingBar.classList.remove('active');
+function startContListening() {
+  if (!continuousMode || isLoading || isPlayingTTS) return;
+  if (isSpeaking) stopSpeaking();
+  isRecording = true;
+  $('micBtn').classList.add('active');
+  $('recBar').classList.add('active');
+  $('liveText').textContent = '正在听...';
+  updateContStatus();
+  try { recognition?.start(); } catch(e) {}
+}
+
+function updateContStatus() {
+  if (!continuousMode) { $('contText').textContent = 'CONTINUOUS MODE'; return; }
+  $('contText').textContent = isRecording ? '🎙 LISTENING...' : isLoading ? '💭 THINKING...' : isPlayingTTS ? '🔊 SPEAKING...' : '⏳ READY...';
 }
 
 // ============ INPUT ============
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-}
-// ============ API KEY SETUP ============
-if (!CONFIG.API_KEY) {
-  const key = prompt('请输入你的 Anthropic API Key：');
-  if (key && key.trim()) {
-    localStorage.setItem('aria_api_key', key.trim());
-    CONFIG.API_KEY = key.trim();
-  }
-}
+function handleKey(e) { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
 </script>
 </body>
 </html>
