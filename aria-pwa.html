@@ -599,48 +599,7 @@ async function handleSearch(query, streamEl) {
 
 // ===================== TTS (Edge-TTS via Worker) =====================
 async function playTTS(text) {
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-  isPlayingTTS = true;
-  $('speakBtn').style.display = 'flex';
-  updateContStatus();
-
-  try {
-    const resp = await fetch(PROXY, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'tts',
-        text: text.substring(0, 500),
-        voice: 'zh-CN-XiaoyiNeural',
-        rate: '-10%',
-        pitch: '+10Hz',
-      }),
-    });
-
-    if (!resp.ok) throw new Error('TTS failed');
-
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    currentAudio = new Audio(url);
-    currentAudio.onended = () => {
-      isPlayingTTS = false;
-      $('speakBtn').style.display = 'none';
-      updateContStatus();
-      URL.revokeObjectURL(url);
-      if (continuousMode && !isLoading) setTimeout(() => startContListening(), 800);
-    };
-    currentAudio.onerror = () => {
-      isPlayingTTS = false;
-      $('speakBtn').style.display = 'none';
-      updateContStatus();
-      // Fallback to Web Speech API
-      fallbackSpeak(text);
-    };
-    currentAudio.play();
-  } catch(e) {
-    // Fallback to Web Speech API
-    fallbackSpeak(text);
-  }
+  fallbackSpeak(text);
 }
 
 function fallbackSpeak(text) {
